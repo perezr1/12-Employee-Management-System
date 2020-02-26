@@ -18,20 +18,10 @@ connection.connect(function(err) {
   runSearch();
 });
 
-function makeTable() {
-  // Displaying an initial list of products for the user, calling promptSupervisor
-  connection.query("SELECT * FROM products", function(err, res) {
-    if (err) throw err;
-    console.table(res);
-    runSearch();
-  });
-}
-
 function runSearch() {
   inquirer
-    .prompt(
-      {
-      name: "Choice",
+    .prompt({
+      name: "action",
       type: "list",
       message: "What would you like to do?",
       choices: [
@@ -41,7 +31,8 @@ function runSearch() {
         "View department",
         "View role",
         "View employee",
-        "Update employee role"
+        "Update employee role",
+        "Exit"
       ]
     })
     .then(function(answer) {
@@ -64,6 +55,9 @@ function runSearch() {
         case "View employee":
           viewEmployee();
           break;
+        case "Exit":
+          connection.end();
+          break;
       }
     });
 }
@@ -71,31 +65,75 @@ function runSearch() {
 function addDepartment() {
   // Asking the user about the department they would like to add
   inquirer
-    .prompt([
-      {
+    .prompt({
         type: "input",
-        name: "departmentName",
-        message: "What is the ID of the department?"
-      },
-      {
-        type: "input",
-        name: "departementId",
+        name: "departementName",
         message: "What is the name of the department",
-        validate: function(val) {
-          return val > 0;
-        }
-      }
-    ])
+    })
     .then(function(answer) {
       // Using the information the user provided to create a new department
-      connection.query("INSERT INTO department (id,name) VALUES (?, ?)",
-        [val.id, val.name],
-        function(err) {
-          if (err) throw err;
-          // If successful, alert the user, run makeTable again
-          console.log("ADDED DEPARTMENT!");
-          makeTable();
-        }
-      );
-    });
+      connection.query("INSERT INTO department SET ?",
+      {name: answer.addDepartment},
+      function(err) {
+        if (err) throw err;
+        console.log("ADDED DEPARTMENT!");
+      });
+			connection.query("SELECT * FROM department", function(err, result) {
+				if (err) throw err;
+				console.table(result);
+				runSearch();
+			});
+		});
+}
+
+function addRole() {
+	inquirer
+		.prompt({
+			type: "input",
+			name: "roleId",
+			message: "What is the new role ID?"
+    })
+    .then(function(answer) {
+			var newRoleTitle = answer.roleId;
+      
+      inquirer
+				.prompt({
+					type: "input",
+					name: "roleTitle",
+					message: "What is the new role title?"
+        })
+        .then(function(answer) {
+          var newSalary = answer.roleTitle;
+          
+          inquirer
+          .prompt({
+            type: "input",
+            name: "roleSalary",
+            message: "What is the new role salary?"
+          })
+          .then(function(answer) {
+            var newSalary = answer.roleSalary;
+
+            inquirer
+            .prompt({
+              type: "input",
+              name: "departmentId",
+              message: "What is the new department ID?"
+            })
+            .then(function(answer) {
+              var newSalary = answer.departmentId;
+              var query = "INSERT INTO roles (title, salary, department_id) VALUES ?";
+            connection.query(
+              query,[roleTitle, newSalary, newDepartmentID],
+              function(err, res) {
+                if (err) {
+                  console.log(err);
+                }
+                runSearch();
+              }
+							);
+						});
+				});
+		});
+  })
 }
