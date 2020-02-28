@@ -8,7 +8,7 @@ var connection = mysql2.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "Jacoban27-",
+  password: "",
   database: "employee_trackerDB"
 });
 
